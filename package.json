@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/itsfrosty/homebridge-c4-plugin"
+    "url": "git+https://github.com/tskippervold/homebridge-c4-plugin"
   },
   "keywords": [
     "control4",
