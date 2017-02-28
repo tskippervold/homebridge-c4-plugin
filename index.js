@@ -4,6 +4,7 @@ var url = require('url');
 var Service = require("hap-nodejs").Service;
 var light = require('./devices/light');
 var thermostat = require('./devices/thermostat');
+var _ = require('lodash');
 
 var allDeviceConfig = {
   "light" : light,
@@ -168,31 +169,37 @@ c4Accessory.prototype.setStateVariable = function(variableName, value, callback)
     callback();
     return;
   }
-  var variableID = this.variableIDs[variableName];
-  if (this.deviceConfig[variableName].derived) {
-    variableID = this.deviceConfig[variableName].getVariableIDForSet(
-      value,
-      this._lastResult,
-      this.variableIDs
+
+  var internalFunction = function() {
+    var variableID = this.variableIDs[variableName];
+    if (this.deviceConfig[variableName].derived) {
+      variableID = this.deviceConfig[variableName].getVariableIDForSet(
+          value,
+          this._lastResult,
+          this.variableIDs
+      );
+    }
+    setDeviceVariable(
+        this.baseURL,
+        this.proxyID,
+        variableID,
+        this.deviceConfig[variableName].toConverter(value),
+        function(error, response) {
+          if (error) {
+            this.log.error("Set variable function failed: " + error.message);
+            callback(error);
+          } else if (response.success == "true") {
+            callback(null);
+          } else {
+            this.log.error("Unable to set variable");
+            callback(new Error("Unable to set variable"));
+          }
+        }.bind(this)
     );
-  }
-  setDeviceVariable(
-    this.baseURL,
-    this.proxyID,
-    variableID,
-    this.deviceConfig[variableName].toConverter(value),
-    function(error, response) {
-      if (error) {
-        this.log.error("Set variable function failed: " + error.message);
-        callback(error);
-      } else if (response.success == "true") {
-        callback(null);
-      } else {
-        this.log.error("Unable to set variable");
-        callback(new Error("Unable to set variable"));
-      }
-    }.bind(this)
-  );
+  }.bind(this);
+
+  _.debounce(internalFunction, 500, {leading:false, trailing:true});
+
 };
 
 function getDeviceVariables(baseURL, proxyID, variableIDs, callback) {
