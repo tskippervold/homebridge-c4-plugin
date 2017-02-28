@@ -15,7 +15,7 @@ var Service;
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   homebridge.registerAccessory("homebridge-c4-plugin", "c4", c4Accessory);
-}
+};
 
 function c4Accessory(log, config) {
   log("C4Plugin Init");
