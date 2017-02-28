@@ -196,9 +196,9 @@ c4Accessory.prototype.setStateVariable = function(variableName, value, callback)
           }
         }.bind(this)
     );
-  }.bind(this);
+  };
 
-  _.debounce(internalFunction, 500, {leading:false, trailing:true});
+  _.debounce(internalFunction.bind(this), 500, {leading:false, trailing:true});
 
 };
 
